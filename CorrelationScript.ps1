@@ -132,7 +132,7 @@ $ResultsFile.testResults.httpSample | Select-Object lb |
 
 #Create empty csv with headers
 $ObjectCreation = [pscustomobject]@{'ControlId' = ""; 'RequestId' = ""}
-$ObjectCreation | Export-Csv -Path C:\Temp\Test.csv -NoTypeInformation
+$ObjectCreation | Export-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv) -NoTypeInformation
 
 $TotControlIds=@()
 
@@ -151,19 +151,19 @@ foreach ($RequestId in $RequestIds)
     #Add ControlIds to csv
     foreach ($ControlId in $ControlIds)
     {
-        Add-Content -Path C:\Temp\Test.csv -Value "`"$ControlId`",`"$RequestId`""
+        Add-Content -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv) -Value "`"$ControlId`",`"$RequestId`""
     }  
 }
 
 #Remove empty records in csv
-Import-Csv -Path C:\Temp\Test.csv  | Where-Object { $_.PSObject.Properties.Value -ne '' } | Export-Csv -Path C:\Temp\Extract.csv -NoTypeInformation
-Remove-item "C:\Temp\Test.csv"
+Import-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv)  | Where-Object { $_.PSObject.Properties.Value -ne '' } | Export-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Extract.csv) -NoTypeInformation
+Remove-item (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv)
 
 #################### Extract Controls details from response ####################
 
 #Create empty csv with headers
 $ObjectCreation = [pscustomobject]@{'ControlId' = "";'ControlName'=""; 'RequestId' = ""}
-$ObjectCreation | Export-Csv -Path C:\Temp\Test.csv -NoTypeInformation
+$ObjectCreation | Export-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv) -NoTypeInformation
 
 $ResponseList = @()
 $RequestIdsList = @()
@@ -195,7 +195,7 @@ foreach ($ControlId in $TotControlIds)
             else
             {
                 #Add Control details to csv
-                Add-Content -Path C:\Temp\Test.csv -Value "`"$FirstResponse`",`"$RequestId`""
+                Add-Content -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv) -Value "`"$FirstResponse`",`"$RequestId`""
                 $ResponseList += $FirstResponse
                 $RequestIdsList += $RequestId
             }
@@ -204,15 +204,15 @@ foreach ($ControlId in $TotControlIds)
 }
 
 #Remove empty records in csv
-Import-Csv -Path C:\Temp\Test.csv  | Where-Object { $_.PSObject.Properties.Value -ne '' } | Export-Csv -Path C:\Temp\ExtractcleanResp.csv -NoTypeInformation
-Remove-item "C:\Temp\Test.csv"
+Import-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv)  | Where-Object { $_.PSObject.Properties.Value -ne '' } | Export-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath ExtractcleanResp.csv) -NoTypeInformation
+Remove-item (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath Test.csv)
 
 #################### Updated the script with Regular Expression extractors for each control ####################
 
 #Get the JMX script file
 $ScriptFile = [xml](Get-Content $JMXFilePath)
 
-Import-Csv -Path C:\Temp\ExtractcleanResp.csv  | ForEach-Object {
+Import-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath ExtractcleanResp.csv)  | ForEach-Object {
    #For each Control
    $CtrlId = ($_.ControlId).TrimStart('Id":"').TrimEnd('"') #| select ControlId -Pattern '([0-9]+_[0-9]+)' -AllMatches | % { $_.Matches } | % { $_.Value } 
    $CtrlName = ($_.ControlName).TrimStart('Name:"').TrimEnd('"')
@@ -247,7 +247,7 @@ $ScriptFile.save($JMXFilePath)
 
 #################### Replace the controlIds in the script with new variables created through RegEx extractors ####################
 
-Import-Csv -Path C:\Temp\ExtractcleanResp.csv  | ForEach-Object {
+Import-Csv -Path (Join-Path -Path ([System.io.Path]::GetTempPath()) -ChildPath ExtractcleanResp.csv)  | ForEach-Object {
    #Get the JMX script file
    $ScriptFile = Get-Content -Path $JMXFilePath
 
